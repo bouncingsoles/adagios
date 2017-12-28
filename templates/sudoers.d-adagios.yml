@@ -1,0 +1,6 @@
+Defaults:naemon    !requiretty
+#%naemon             ALL = (root) NOPASSWD: /etc/init.d/naemon
+naemon             ALL = (root) NOPASSWD: /sbin/service naemon *
+naemon             ALL = (root) NOPASSWD: /bin/naemon -v *
+# Nagios daemon control on CentOS 7
+naemon ALL = (root) NOPASSWD: /usr/bin/systemctl

@@ -1,0 +1,89 @@
+- name: Make sure Nagios cfg files absent so pynag updates correct locations.
+  file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "/etc/nagios/nagios.cfg"
+    - "/etc/nagios/cgi.cfg"
+  register: results
+
+- name: Template out sudoers file for adagios
+  template:
+    src: sedcommands.sh
+    dest: /usr/local/bin/sedcommands.sh
+    owner: root
+    group: root
+    mode: 0777
+  when: results.changed
+
+- name: Run our shell sed commands
+  shell: /usr/local/bin/sedcommands.sh
+  when: results.changed
+
+- name: Run all the shell commands to setup nagios config.
+  shell: "{{item}}"
+  with_items:
+    - pynag config --set "process_performance_data=1"
+    - pynag config --append cfg_dir=/etc/naemon/adagios/
+    - pynag config --set 'service_perfdata_file=/var/lib/naemon/service-perfdata'
+    - pynag config --set 'service_perfdata_file_template=DATATYPE::SERVICEPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tSERVICEDESC::$SERVICEDESC$\tSERVICEPERFDATA::$SERVICEPERFDATA$\tSERVICECHECKCOMMAND::$SERVICECHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$\tSERVICESTATE::$SERVICESTATE$\tSERVICESTATETYPE::$SERVICESTATETYPE$'
+    - pynag config --set 'service_perfdata_file_mode=a'
+    - pynag config --set 'service_perfdata_file_processing_interval=15'
+    - pynag config --set 'service_perfdata_file_processing_command=process-service-perfdata-file'
+    - pynag config --set 'host_perfdata_file=/var/lib/naemon/host-perfdata'
+    - pynag config --set 'host_perfdata_file_template=DATATYPE::HOSTPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tHOSTPERFDATA::$HOSTPERFDATA$\tHOSTCHECKCOMMAND::$HOSTCHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$'
+    - pynag config --set 'host_perfdata_file_mode=a'
+    - pynag config --set 'host_perfdata_file_processing_interval=15'
+    - pynag config --set 'host_perfdata_file_processing_command=process-host-perfdata-file'
+    - pynag add command command_name=process-service-perfdata-file command_line='/bin/mv /var/lib/naemon/service-perfdata /var/spool/pnp4nagios/service-perfdata.$TIMET$'
+    - pynag add command command_name=process-host-perfdata-file command_line='/bin/mv /var/lib/naemon/host-perfdata /var/spool/pnp4nagios/host-perfdata.$TIMET$'
+    - pynag config --append cfg_dir=/etc/naemon/commands/
+  when: results.changed
+
+#Create local user accounts
+- name: Add Naemon user to apache group
+  user:
+    name: naemon
+    state: present
+    groups: apache
+    append: yes
+
+- name: Template out sudoers file for adagios
+  template:
+    src: sudoers.d-adagios.yml
+    dest: /etc/sudoers.d/adagios
+    owner: root
+    group: root
+    mode: 0440
+  tags: sudo
+
+- lineinfile:
+    state: present
+    path: /etc/adagios/adagios.conf
+    regexp: '^# ALLOWED_HOSTS ='
+    line: "ALLOWED_HOSTS = ['*']"
+    backrefs: yes
+
+- name: Init OK config.
+  shell: /bin/okconfig init
+  when: results.changed
+
+- name: Make sure thruk is stopped and disabled from startup.
+  service:
+    name: "{{item}}"
+    enabled: no
+    state: stopped
+  with_items:
+    - thruk
+
+- name: Make sure all services are running.
+  service:
+    name: "{{item}}"
+    enabled: yes
+    state: started
+  with_items:
+    - naemon
+    - httpd
+    - npcd
+
+#okconfig init

@@ -1,0 +1,21 @@
+galaxy_info:
+  author: Patrick Durante
+  description: Module that will install Adagios on CentOS 7
+  company: None
+
+  license: MIT / BSD
+
+  min_ansible_version: 2.4
+
+  platforms:
+   - name: EL
+     versions:
+     - 7
+
+  galaxy_tags:
+  - adagios
+  - nagios
+  - naemon
+  - pnp4nagios
+
+dependencies: []

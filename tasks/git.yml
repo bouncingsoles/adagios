@@ -1,0 +1,5 @@
+- name: Do the initial GIT command for nagios to start the repo
+  shell: git init ; git config user.name "root" ; git config user.email "root@localhost" ; git add * ; git commit -m "Initial commit for nagios"
+  args:
+    chdir: /etc/naemon/
+    creates: .git

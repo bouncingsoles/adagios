@@ -1,0 +1,44 @@
+- name: Set the file permissions for Naemon.
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: naemon
+    group: naemon
+  with_items:
+    - "/etc/nagios"
+    - "/etc/adagios"
+    - "/var/lib/adagios"
+    - "/var/lib/pnp4nagios"
+    - "/var/spool/pnp4nagios"
+    - "/etc/naemon/adagios"
+#  register: results
+
+- name: Set the file permissions for the group to RWX
+  file:
+    path: /etc/adagios
+    owner: naemon
+    group: naemon
+    mode: "g+rwx"
+    recurse: yes
+#  when: results.changed
+
+- name: Set the file permissions for the owner of Naemon directory.
+  file:
+    path: /etc/naemon
+    owner: naemon
+    group: naemon
+    recurse: yes
+
+- name: More file permissions for Naemon
+  file:
+    path: "{{item}}"
+    owner: naemon
+    group: naemon
+  with_items:
+    - "/etc/pnp4nagios/process_perfdata.cfg"
+    - "/var/log/okconfig"
+    - "/var/log/pnp4nagios"
+#  register: results
+
+
+#file: dest=/foo/bar/somedir owner=root group=apache mode=0775 recurse=yes

@@ -1,0 +1,38 @@
+- name: Install the OK release repo for Adagios
+  yum:
+    name: http://opensource.is/repo/ok-release.rpm
+    state: present
+
+- name: Install the Naemon release repo for Naemon
+  yum:
+    name: https://labs.consol.de/repo/stable/rhel7/i386/labs-consol-stable.rhel7.noarch.rpm
+    state: present
+
+- name: Install packages needed by adagios. Including Naemon.
+  yum:
+    name:
+      - epel-release
+      - ok-release
+      - naemon
+      - httpd
+      - nagios-plugins-all
+      - git
+
+- name: Install the adagios specific packages.
+  yum:
+    enablerepo: ok-testing
+    state: present
+    name:
+      - adagios
+      - okconfig
+      - acl
+      - python-setuptools
+      - pnp4nagios
+
+- name: Install the OK testing checks
+  yum:
+    enablerepo: ok-testing
+    state: present
+    skip_broken: yes
+    name:
+      - nagios-okplugin-*

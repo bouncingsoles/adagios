@@ -1,0 +1,9 @@
+---
+- import_tasks: repo.yml
+  tags: repo
+- import_tasks: git.yml
+  tags: git
+- import_tasks: filesandfolders.yml
+  tags: files
+- import_tasks: naemon.yml
+  tags: naemon
