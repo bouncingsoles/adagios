@@ -1,6 +1,6 @@
 adagios
 =========
-This module will install adagios using Naemon instead of Nagios on a CentOS 7 server.  Configures pnp4nagios as well.
+This ansible role will install Adagios with PNP4Nagios and Naemon.  
 
 Requirements
 ------------
@@ -19,7 +19,7 @@ Example Playbook
 ----------------
 
 ```sh
-- name: Rotate keys used in AWS for hosts that use api keys.
+- name: Install the adagios with Naemon and pnp4nagios
   hosts: xxxx
   roles:
      - bouncingsoles.adagios
